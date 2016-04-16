@@ -5,40 +5,13 @@
   <meta charset="utf-8"/>
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <script type="text/javascript" src="main.js"></script>
-</head>
-
 <style>
-  * {
-    margin: 0;
-    padding: 0;
-  }
-  body {
-    height: 100%;
-    width: 100%;
-  }
-
-  .game-of-life-container {
-    position: relative;
-  }
-
-  #game-of-life {
-    display: block;
-    margin: 0 auto;
-    cursor: crosshair;
-  }
-
-  .control-bar {
-    text-align: center;
-    margin: 0 auto;
-  }
-
-  .footer {
-    margin: 0 auto;
-    padding: 50px 0;
-    text-align: center;
-  }
+  * { margin:0; padding:0; }
+  body { height:100%; width:100%; }
+  .game-of-life-container { position:relative; }
+  #game-of-life { display:block; margin: 0 auto; cursor:crosshair; }
 </style>
-
+</head>
 <body>
   <div class="game-of-life-container">
     <canvas id="game-of-life" width="1024" height="512">
@@ -47,22 +20,11 @@
     <div id="fps" style="text-align: center">FPS</div> 
   </div>
 
-  <div class="control-bar">
-    <button onclick="width *= 2; height *= 2;"> Zoom in</button>
-    <button onclick="width /= 2; height /= 2;"> Zoom out</button>
-  </div>
-
-  <div class="footer">
-    <p> Conway's Game of Life in WebGL</p>
-    <p> Copyright © 2014 <a href="http://mingplusplus.com">Zhiming Guo</a> </p>
-  </div>
   <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.1.0/gl-matrix-min.js"> </script>
   <script>
-    //gameOfLife();
-  life = new GameOfLife(1024, 512, 
-      document.getElementById("game-of-life"));
-life.run();
-life.fpsElement = document.getElementById("fps");
+    life = new GameOfLife(1024, 512, document.getElementById("game-of-life"));
+    life.run();
+    life.fpsElement = document.getElementById("fps");
   </script>
 </body>
 </html>
