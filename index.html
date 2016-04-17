@@ -6,19 +6,18 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <script type="text/javascript" src="main.js"></script>
     <style>
-      body, html { width:100%; height:100%; margin:0; padding:0; overflow:hidden; }
-      #game-of-life { position:absolute; cursor:crosshair; }
+      body, html { width:100%; height:100%; margin:0; padding:0; overflow:hidden; background:black; }
+      #game-of-life { position:absolute; cursor:crosshair; display:block; }
     </style>
   </head>
   <body>
-    <canvas id="game-of-life" width="1024" height="512">
+    <canvas id="game-of-life">
       Your browser doesn't support WebGL
     </canvas>
-    <div id="fps" style="text-align: center">FPS</div>
 
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.1.0/gl-matrix-min.js"></script>
     <script>
-      life = new GameOfLife(1024, 512, document.getElementById("game-of-life"));
+      life = new GameOfLife(document.getElementById('game-of-life'));
       life.run();
     </script>
   </body>

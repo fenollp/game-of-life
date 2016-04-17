@@ -1,4 +1,18 @@
-function GameOfLife (width, height, canvas) {
+function GameOfLife (canvas) {
+    function resize() {
+        var closest_pow2 = function (x) {
+            return Math.pow(2, Math.ceil(Math.log(x)/Math.log(2)));
+        };
+        var w = closest_pow2(window.innerWidth);
+        var h = closest_pow2(window.innerHeight);
+        console.log(w);
+        console.log(h);
+        canvas.width = w;
+        canvas.height = h;
+    };
+    canvas.addEventListener('resize', resize, false);
+    resize();
+
     /* Private stuff */
     var gl;
     var pendingLive = [];
@@ -104,7 +118,6 @@ function GameOfLife (width, height, canvas) {
 
     function captureMouseWheel(canvas) {
         canvas.onmousewheel = function(e) {
-            console.log(e.wheelDelta);
             if (e.wheelDelta > 0.0)
                 scale *= 1.03;
             else
@@ -154,14 +167,13 @@ function GameOfLife (width, height, canvas) {
         gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
         gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
         gl.bindTexture(gl.TEXTURE_2D, null);
-        this.resize = function(width, height) {
-        };
+        this.resize = resize;
     }
 
     /* Public methods */
-    this.width = width;
-    this.height = height;
-    this.resize = function(width, height) {};
+    this.width = canvas.width;
+    this.height = canvas.height;
+    this.resize = resize;
     this.zoom = function(pos, ratio) {};
     this.run = function() {
         captureClick(canvas);
@@ -177,13 +189,13 @@ function GameOfLife (width, height, canvas) {
     var calcProgram = createProgram(getText("vshader.glsl"), getText("calc_fshader.glsl"));
     var displayProgram = createProgram(getText("vshader.glsl"), getText("display_fshader.glsl"));
 
-    var initData = new Uint8Array(width * height * 4);
+    var initData = new Uint8Array(canvas.width * canvas.height * 4);
     for (var i = 0; i < initData.length; i += 4) {
         initData[i+1] = Math.random() > 0.5 ? 255 : 0;
         initData[i+3] = 255;
     }
-    var sourceTexture = new Texture(width, height, initData);
-    var outputTexture = new Texture(width, height);
+    var sourceTexture = new Texture(canvas.width, canvas.height, initData);
+    var outputTexture = new Texture(canvas.width, canvas.height);
 
     /* Prepare initial data */
     var vertices = [ 1.0,  1.0,
@@ -214,8 +226,8 @@ function GameOfLife (width, height, canvas) {
         gl.clear(gl.COLOR_BUFFER_BIT);
         // Calculation program: render-to-texture
         gl.useProgram(calcProgram);
-        gl.uniform1f(cellWidthLocation, 1.0 / width);
-        gl.uniform1f(cellHeightLocation, 1.0 / height);
+        gl.uniform1f(cellWidthLocation, 1.0 / canvas.width);
+        gl.uniform1f(cellHeightLocation, 1.0 / canvas.height);
         gl.uniformMatrix4fv(transformLocation, gl.FALSE, mat4.create());
 
         var revive = [-1, -1];
@@ -233,7 +245,7 @@ function GameOfLife (width, height, canvas) {
         gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,
                                 gl.TEXTURE_2D, outputTexture.texture, 0);
-        gl.viewport(0, 0, width, height);
+        gl.viewport(0, 0, canvas.width, canvas.height);
         gl.bindTexture(gl.TEXTURE_2D, sourceTexture.texture);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         gl.useProgram(null);
