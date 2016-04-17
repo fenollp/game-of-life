@@ -46,13 +46,6 @@ function GameOfLife (canvas) {
         };
     }();
 
-    var getText = function(path) {
-        var client = new XMLHttpRequest();
-        client.open('GET', path, false); client.send();
-        if (client.readyState != 4) return null;
-        return client.responseText;
-    };
-
     function captureClick(canvas) {
         function relMouseCoords(currentElement, event){
             var totalOffsetX = 0;
@@ -181,13 +174,71 @@ function GameOfLife (canvas) {
         mainLoop.call(this);
     }
 
+    var VSHADER = [ "#version 100",
+                    "attribute vec4 vertice_position;",
+                    "uniform float cell_width;",
+                    "uniform float cell_height;",
+                    "uniform mat4 transform;",
+                    "varying float w, h;",
+                    "varying vec2 xy;",
+                    "varying vec2 neighbors[8];",
+                    "void main() {",
+                    "    gl_Position = transform * vertice_position;",
+                    "    xy = (vertice_position.xy + vec2(1.0, 1.0)) * 0.5;",
+                    "    neighbors[0] = vec2(cell_width, cell_height);",
+                    "    neighbors[1] = vec2(-cell_width, -cell_height);",
+                    "    neighbors[2] = vec2(cell_width, -cell_height);",
+                    "    neighbors[3] = vec2(-cell_width, cell_height);",
+                    "    neighbors[4] = vec2(0, cell_height);",
+                    "    neighbors[5] = vec2(cell_width, 0);",
+                    "    neighbors[6] = vec2(0, -cell_height);",
+                    "    neighbors[7] = vec2(-cell_width, 0);",
+                    "    w = cell_width;",
+                    "    h = cell_height;",
+                    "}"
+                  ].join('\n');
+
+    var STEPSHADER = [ "#version 100",
+                       "precision mediump float;",
+                       "uniform sampler2D tex;",
+                       "uniform vec2 revive;",
+                       "varying float w, h;",
+                       "varying vec2 xy;",
+                       "varying vec2 neighbors[8];",
+                       "void main () {",
+                       "    int count = 0;",
+                       "    for (int i = 0; i <= 7; i++) {",
+                       "        if (texture2D(tex, xy + neighbors[i]).g == 1.0)",
+                       "            count += 1;",
+                       "    }",
+                       "    float g = texture2D(tex, xy).g;",
+                       "    if (count == 3 || (g == 1.0 && count == 2) ||",
+                       "        (abs(xy.x - revive.x) < w * 5.0 &&",
+                       "         abs(xy.y - revive.y) < h * 5.0))",
+                       "        gl_FragColor = vec4(0.1, 1, 0.2, 1);",
+                       "    else if (g > 0.0)",
+                       "        gl_FragColor = vec4(0.1, g - 0.05, 0.2, 1);",
+                       "    else",
+                       "        gl_FragColor = vec4(0.1, 0.0, 0.2, 1);",
+                       "}"
+                     ].join('\n');
+
+    var SHOWSHADER = [ "#version 100",
+                       "uniform sampler2D tex;",
+                       "precision mediump float;",
+                       "varying vec2 xy;",
+                       "void main() {",
+                       "    gl_FragColor = texture2D(tex, xy);",
+                       "}"
+                     ].join('\n');
+
     /* Main logic */
     try {
         gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
     } catch(e) {}
     if (!gl) return;
-    var calcProgram = createProgram(getText("vshader.glsl"), getText("calc_fshader.glsl"));
-    var displayProgram = createProgram(getText("vshader.glsl"), getText("display_fshader.glsl"));
+    var calcProgram = createProgram(VSHADER, STEPSHADER);
+    var displayProgram = createProgram(VSHADER, SHOWSHADER);
 
     var initData = new Uint8Array(canvas.width * canvas.height * 4);
     for (var i = 0; i < initData.length; i += 4) {
