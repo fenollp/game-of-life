@@ -256,8 +256,7 @@ function GameOfLife (width, height, canvas) {
         gl.bindTexture(gl.TEXTURE_2D, null);
         gl.useProgram(null);
 
-        if (this.fpsElement)
-            this.fpsElement.innerHTML = getFPS().toFixed(0);
+        document.title = getFPS().toFixed(0) + ' FPS';
 
         // Pint-pong texture
         tmp = outputTexture;
